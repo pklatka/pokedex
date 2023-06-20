@@ -1,8 +1,10 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { MaterialIcons } from '@expo/vector-icons';
 import PokemonList from './components/PokemonList';
 import PokemonMainScreen from './components/PokemonMainScreen';
 
@@ -22,9 +24,16 @@ function MainScreenTabs() {
   return (
     <Tab.Navigator>
       <Tab.Screen name="List" component={PokemonList} options={{
-        title: 'Pokemon list'
+        title: 'Pokemon list',
+        tabBarIcon: ({ color, size }) => <MaterialIcons name="format-list-bulleted" size={size} color={color} />
       }} />
-      <Tab.Screen name="Favourites" component={SettingsScreen} />
+      <Tab.Screen name="Favourites" component={SettingsScreen} options={{
+        tabBarIcon: ({ color, size }) => <MaterialIcons name="favorite-border" size={size} color={color} />
+      }} />
+      <Tab.Screen name="Map" component={SettingsScreen} options={{
+        tabBarIcon: ({ color, size }) => <MaterialIcons name="map" size={size} color={color} />
+      }} />
+
     </Tab.Navigator>
   )
 }
