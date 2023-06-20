@@ -2,27 +2,39 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, TouchableHighlight, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import { AntDesign } from '@expo/vector-icons';
 import capitalizeFirstLetter from '../utils/capitalizeFirstLetter';
+import { updatePokemonStatus, isPokemonFavorite } from '../utils/asyncStorage';
 
-export default function PokemonItem({ pokemonUrl, navigation }: { pokemonUrl: string, navigation: any }) {
-    const [pokemonInfo, setPokemonInfo] = useState(null)
+export default function PokemonItem({ pokemonInfo, navigation }: { pokemonInfo: any, navigation: any }) {
+    // const [pokemonInfo, setPokemonInfo] = useState(null)
     const [isFavorite, setIsFavorite] = useState(false)
 
     useEffect(() => {
-        fetch(pokemonUrl)
-            .then(response => response.json())
-            .then(data => setPokemonInfo(data))
+        isPokemonFavorite(String(pokemonInfo.id)).then((isFavorite) => {
+            setIsFavorite(isFavorite)
+        })
     }, [])
+
+    const handleStarPress = () => {
+        updatePokemonStatus(String(pokemonInfo.id), !isFavorite)
+        setIsFavorite(!isFavorite)
+    }
+
+    // useEffect(() => {
+    //     fetch(pokemonUrl)
+    //         .then(response => response.json())
+    //         .then(data => setPokemonInfo(data))
+    // }, [])
 
     return (
         <TouchableOpacity onPress={() => navigation.navigate('PokemonDetails', { pokemonInfo })}>
             <View style={[styles.container, styles.shadowProp]}>
-                <TouchableOpacity style={styles.star} onPress={() => setIsFavorite(!isFavorite)}>
+                <TouchableOpacity style={styles.star} onPress={handleStarPress}>
                     {isFavorite ? <AntDesign name="star" size={24} color="yellow" /> : <AntDesign name="staro" size={24} color="black" />}
                 </TouchableOpacity>
                 <Image style={styles.pokemonImage} source={{ uri: pokemonInfo?.sprites?.other.home.front_default }}></Image>
                 <Text style={styles.pokemonName}>{capitalizeFirstLetter(pokemonInfo?.name)}</Text>
             </View>
-        </TouchableOpacity >
+        </TouchableOpacity>
     )
 }
 

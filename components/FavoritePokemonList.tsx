@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, FlatList, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native'
 import PokemonItem from './PokemonItem'
+import { getFavoritePokemons } from '../utils/asyncStorage'
+import { useIsFocused } from "@react-navigation/native";
 
 // TODO: Export it from somewhere else
 const API_ROUTE = "https://pokeapi.co/api/v2/pokemon"
-const LIMIT = 20
-const ON_END_REACHED_THRESHOLD = 3.5
 
 const fetchPokemonData = (url: string): Promise<Object> => {
     return new Promise((resolve, reject) => {
@@ -21,19 +21,20 @@ const fetchPokemonData = (url: string): Promise<Object> => {
 }
 
 
-export default function PokemonList({ navigation }) {
+export default function FavoritePokemonList({ navigation }) {
     const [pokemonList, setPokemonList] = useState([])
-    const [offset, setOffset] = useState(0)
+    const isFocused = useIsFocused();
 
     useEffect(() => {
-        fetch(`${API_ROUTE}?limit=${LIMIT}&offset=${offset}`)
-            .then(response => response.json())
+        getFavoritePokemons()
             .then(data => {
-                Promise.all(data.results.map((pokemon: any) => fetchPokemonData(pokemon.url))).then((data) => {
-                    setPokemonList([...pokemonList, ...data])
+                console.log(data)
+                if (data.length === 0) return
+                Promise.all(data.map((pokemonId: any) => fetchPokemonData(`${API_ROUTE}/${pokemonId}`))).then((data) => {
+                    setPokemonList(data)
                 }).catch(error => console.log(error))
             }).catch(error => console.log(error))
-    }, [])
+    }, [isFocused])
 
     return (
         <>
@@ -44,20 +45,6 @@ export default function PokemonList({ navigation }) {
                     numColumns={1}
                     contentContainerStyle={styles.container}
                     keyExtractor={item => item.url}
-                    onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
-                    onEndReached={() => {
-                        // Load more data
-                        fetch(`${API_ROUTE}?limit=${LIMIT}&offset=${offset + LIMIT}`)
-                            .then(response => response.json())
-                            .then(data => {
-                                Promise.all(data.results.map((pokemon: any) => fetchPokemonData(pokemon.url))).then((data) => {
-                                    setPokemonList([...pokemonList, ...data])
-                                }).catch(error => console.log(error))
-                            })
-
-                        // Update offset
-                        setOffset(offset + LIMIT)
-                    }}
                 />}
         </>
     )

@@ -1,20 +1,21 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { MaterialIcons } from '@expo/vector-icons';
 import PokemonList from './components/PokemonList';
 import PokemonMainScreen from './components/PokemonMainScreen';
+import FavoritePokemonList from './components/FavoritePokemonList'
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const SettingsScreen = () => {
+const TemporaryScreen = () => {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Settings!</Text>
+      <Text>TMP!</Text>
       <StatusBar style="auto" />
     </View>
   );
@@ -27,10 +28,10 @@ function MainScreenTabs() {
         title: 'Pokemon list',
         tabBarIcon: ({ color, size }) => <MaterialIcons name="format-list-bulleted" size={size} color={color} />
       }} />
-      <Tab.Screen name="Favourites" component={SettingsScreen} options={{
+      <Tab.Screen name="Favorites" component={FavoritePokemonList} options={{
         tabBarIcon: ({ color, size }) => <MaterialIcons name="favorite-border" size={size} color={color} />
       }} />
-      <Tab.Screen name="Map" component={SettingsScreen} options={{
+      <Tab.Screen name="Map" component={TemporaryScreen} options={{
         tabBarIcon: ({ color, size }) => <MaterialIcons name="map" size={size} color={color} />
       }} />
 

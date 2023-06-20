@@ -3,6 +3,7 @@ import { View, Text, TouchableHighlight, Image, StyleSheet, TouchableOpacity } f
 import capitalizeFirstLetter from '../utils/capitalizeFirstLetter'
 import { AntDesign } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
+import { updatePokemonStatus, isPokemonFavorite } from '../utils/asyncStorage';
 
 const convertStatNameToReadable = (statName: string): string => {
     return statName?.split('-').map(word => capitalizeFirstLetter(word)).join(' ')
@@ -32,10 +33,21 @@ export default function PokemonItem({ route, navigation }: { route: any, navigat
     const { pokemonInfo } = route.params
     const [isFavorite, setIsFavorite] = useState(false)
 
+    useEffect(() => {
+        isPokemonFavorite(String(pokemonInfo.id)).then((isFavorite) => {
+            setIsFavorite(isFavorite)
+        })
+    })
+
+    const handleStarPress = () => {
+        // setIsFavorite(!isFavorite)
+        // updatePokemonStatus(String(pokemonInfo.id), !isFavorite)
+    }
+
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.mainTitle}>{capitalizeFirstLetter(pokemonInfo?.name)}</Text>
-            <TouchableOpacity style={styles.star} onPress={() => setIsFavorite(!isFavorite)}>
+            <TouchableOpacity style={styles.star} onPress={handleStarPress}>
                 {isFavorite ? <AntDesign name="star" size={33} color="yellow" /> : <AntDesign name="staro" size={33} color="black" />}
             </TouchableOpacity>
             <Image style={{ width: 200, height: 200 }} source={{ uri: pokemonInfo?.sprites?.other.home.front_default }}></Image>
@@ -44,16 +56,14 @@ export default function PokemonItem({ route, navigation }: { route: any, navigat
             <View style={styles.pokemonStatsWrapper}>
                 <PokemonStat statName="Weight" statValue={pokemonInfo?.weight} />
                 <PokemonStat statName="Base experience" statValue={pokemonInfo?.base_experience} />
-                {pokemonInfo?.stats.map((stat: any) => {
-                    return <PokemonStat key={stat?.stat?.name} statName={stat?.stat?.name} statValue={stat?.base_stat} />
-                })}
+                {pokemonInfo?.stats.map((stat: any) => <PokemonStat key={stat?.stat?.name} statName={stat?.stat?.name} statValue={stat?.base_stat} />
+                )}
             </View>
 
             <Text style={styles.sectionTitle}>Abilities</Text>
             <View style={styles.pokemonAbilitiesWrapper}>
-                {pokemonInfo?.abilities.map((ability: any) => {
-                    return <PokemonAbility key={ability?.ability?.name} abilityName={capitalizeFirstLetter(ability?.ability?.name)} />
-                })}
+                {pokemonInfo?.abilities.map((ability: any) => <PokemonAbility key={ability?.ability?.name} abilityName={capitalizeFirstLetter(ability?.ability?.name)} />
+                )}
             </View>
 
         </ScrollView>
