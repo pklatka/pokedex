@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, FlatList, StyleSheet, SafeAreaView } from 'react-native'
+import { View, Text, FlatList, StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native'
 import PokemonItem from './PokemonItem'
 
 // TODO: Export it from somewhere else
@@ -13,31 +13,32 @@ export default function PokemonList({ navigation }) {
     const [offset, setOffset] = useState(0)
 
     useEffect(() => {
-        console.log("XD")
         fetch(`${API_ROUTE}?limit=${LIMIT}&offset=${offset}`)
             .then(response => response.json())
             .then(data => setPokemonList(data.results))
     }, [])
 
     return (
-        <FlatList
-            style={styles.flatList}
-            data={pokemonList}
-            renderItem={({ item }) => <PokemonItem key={item.url} pokemonUrl={item.url} navigation={navigation} />}
-            numColumns={1}
-            contentContainerStyle={styles.container}
-            keyExtractor={item => item.url}
-            onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
-            onEndReached={() => {
-                // Load more data
-                fetch(`${API_ROUTE}?limit=${LIMIT}&offset=${offset + LIMIT}`)
-                    .then(response => response.json())
-                    .then(data => setPokemonList([...pokemonList, ...data.results]))
+        <>
+            {pokemonList.length === 0 ? <ActivityIndicator style={styles.loader} size="large" color="#000000" /> :
+                <FlatList
+                    data={pokemonList}
+                    renderItem={({ item }) => <PokemonItem key={item.url} pokemonUrl={item.url} navigation={navigation} />}
+                    numColumns={1}
+                    contentContainerStyle={styles.container}
+                    keyExtractor={item => item.url}
+                    onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
+                    onEndReached={() => {
+                        // Load more data
+                        fetch(`${API_ROUTE}?limit=${LIMIT}&offset=${offset + LIMIT}`)
+                            .then(response => response.json())
+                            .then(data => setPokemonList([...pokemonList, ...data.results]))
 
-                // Update offset
-                setOffset(offset + LIMIT)
-            }}
-        />
+                        // Update offset
+                        setOffset(offset + LIMIT)
+                    }}
+                />}
+        </>
     )
 }
 
@@ -48,7 +49,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
     },
-    flatList: {
-        // backgroundColor: 'blue',
+    loader: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     }
 })

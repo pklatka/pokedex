@@ -56,7 +56,6 @@ export default function PokemonItem({ route, navigation }: { route: any, navigat
                 })}
             </View>
 
-
         </ScrollView>
     )
 }
