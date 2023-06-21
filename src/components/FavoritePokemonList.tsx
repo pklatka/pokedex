@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import PokemonItem from "./PokemonItem";
 import { fetchExactPokemonDataById } from "../../utils/fetchPokemonData";
@@ -36,56 +30,64 @@ function NoPokemonsInfo() {
 }
 
 export default function PokemonList() {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [showViews, setShowViews] = useState<boolean>(false);
   const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);
   const isFocused = useIsFocused();
 
   const fetchData = async () => {
     try {
-      setIsLoading(true);
       const favPokemons = await getFavoritePokemons();
+
+      if (JSON.stringify(favPokemons) === JSON.stringify(pokemonList)) return;
+
       const data = await Promise.all(
         favPokemons.map((pokemonId: string) =>
           fetchExactPokemonDataById(pokemonId)
         )
       );
       setPokemonList(data);
-      setIsLoading(false);
     } catch (e) {
       alert(e);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    (async () => {
+      if (isFocused) {
+        await fetchData();
+        setShowViews(true);
+      } else {
+        setShowViews(false);
+      }
+    })();
   }, [isFocused]);
 
   return (
     <>
-      {isLoading && (
-        <ActivityIndicator style={styles.loader} size="large" color="#000000" />
-      )}
-
-      {pokemonList.length === 0 ? (
-        <NoPokemonsInfo />
-      ) : (
-        <FlatList
-          data={pokemonList}
-          renderItem={({ item }: { item: PokemonData }) => (
-            <PokemonItem key={item.url} pokemonInfo={item} />
+      {showViews && (
+        <>
+          {pokemonList.length === 0 ? (
+            <NoPokemonsInfo />
+          ) : (
+            <FlatList
+              data={pokemonList}
+              renderItem={({ item }: { item: PokemonData }) => (
+                <PokemonItem key={item.url} pokemonInfo={item} />
+              )}
+              numColumns={1}
+              keyExtractor={(item) => item.url}
+              contentContainerStyle={styles.container}
+              onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
+              onEndReached={async () => {
+                try {
+                  await fetchData();
+                } catch (e) {
+                  alert(e);
+                }
+              }}
+            />
           )}
-          numColumns={1}
-          keyExtractor={(item) => item.url}
-          contentContainerStyle={styles.container}
-          onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
-          onEndReached={async () => {
-            try {
-              await fetchData();
-            } catch (e) {
-              alert(e);
-            }
-          }}
-        />
+        </>
       )}
     </>
   );
