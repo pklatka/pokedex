@@ -5,7 +5,9 @@ import type { StackNavigationProp } from "@react-navigation/stack";
 
 export type RootStackParamList = {
   MainScreenTabs: undefined;
-  PokemonDetails: { pokemonInfo: PokemonData };
+  PokemonDetails: {
+    pokemonInfo: PokemonData;
+  };
 };
 
 export type PokemonPresentationScreenParams = NativeStackScreenProps<

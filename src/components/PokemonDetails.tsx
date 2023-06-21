@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  DeviceEventEmitter,
+} from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { ScrollView } from "react-native-gesture-handler";
 import {
@@ -8,6 +15,7 @@ import {
 } from "../../utils/stringUtils";
 import { isPokemonFavorite } from "../../utils/asyncStorage";
 import { PokemonPresentationScreenParams } from "../types/NavigationTypes";
+import { useIsFocused } from "@react-navigation/native";
 
 function PokemonStat({
   statName,
@@ -46,22 +54,34 @@ export default function PokemonDetails({
 }: PokemonPresentationScreenParams) {
   const { pokemonInfo } = route.params;
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [initialIsFavorite, setInitialIsFavorite] = useState<boolean>(false);
+  const isFocused = useIsFocused();
 
   useEffect(() => {
     (async () => {
       try {
         const isFavorite = await isPokemonFavorite(String(pokemonInfo.id));
+        setInitialIsFavorite(isFavorite);
         setIsFavorite(isFavorite);
       } catch (e) {
         alert(e);
       }
     })();
-  });
+  }, []);
 
-  const handleStarPress = () => {
-    // setIsFavorite(!isFavorite)
-    // updatePokemonStatus(String(pokemonInfo.id), !isFavorite)
+  const handleStarPress = async () => {
+    try {
+      setIsFavorite(!isFavorite);
+    } catch (e) {
+      alert(e);
+    }
   };
+
+  useEffect(() => {
+    if (!isFocused && initialIsFavorite !== isFavorite) {
+      DeviceEventEmitter.emit(`starPress/${pokemonInfo.id}`);
+    }
+  }, [isFocused]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

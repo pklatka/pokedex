@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import PokemonItem from "./PokemonItem";
 import { fetchPokemonData } from "../../utils/fetchPokemonData";
 
@@ -8,6 +9,8 @@ const ON_END_REACHED_THRESHOLD = 3.5;
 export default function PokemonList() {
   const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);
   const [offset, setOffset] = useState<number>(0);
+  const [rerenderList, setRerenderList] = useState<boolean>(false);
+  const isFocused = useIsFocused();
   const limit: number = 20;
 
   const fetchData = async () => {
@@ -24,6 +27,12 @@ export default function PokemonList() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (isFocused) {
+      setRerenderList(!rerenderList);
+    }
+  }, [isFocused]);
+
   return (
     <>
       {pokemonList.length === 0 ? (
@@ -35,6 +44,7 @@ export default function PokemonList() {
             <PokemonItem key={item.url} pokemonInfo={item} />
           )}
           numColumns={1}
+          extraData={rerenderList}
           keyExtractor={(item) => item.url}
           contentContainerStyle={styles.container}
           onEndReachedThreshold={ON_END_REACHED_THRESHOLD}

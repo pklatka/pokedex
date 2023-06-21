@@ -1,5 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, memo } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  DeviceEventEmitter,
+} from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { capitalizeFirstLetter } from "../../utils/stringUtils";
 import {
@@ -13,9 +20,22 @@ type PokemonItemProps = {
   pokemonInfo: PokemonData;
 };
 
-export default function PokemonItem({ pokemonInfo }: PokemonItemProps) {
+export default memo(function PokemonItem({ pokemonInfo }: PokemonItemProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const navigation = useNavigation<NavigationProp>();
+
+  const handleStarPress = async () => {
+    try {
+      await updatePokemonStatus(String(pokemonInfo.id), !isFavorite);
+      setIsFavorite(!isFavorite);
+    } catch (e) {
+      alert(e);
+    }
+  };
+
+  DeviceEventEmitter.addListener(`starPress/${pokemonInfo.id}`, () => {
+    handleStarPress();
+  });
 
   useEffect(() => {
     (async () => {
@@ -26,16 +46,11 @@ export default function PokemonItem({ pokemonInfo }: PokemonItemProps) {
         alert(e);
       }
     })();
-  }, []);
 
-  const handleStarPress = async () => {
-    try {
-      await updatePokemonStatus(String(pokemonInfo.id), !isFavorite);
-      setIsFavorite(!isFavorite);
-    } catch (e) {
-      alert(e);
-    }
-  };
+    return () => {
+      DeviceEventEmitter.removeAllListeners(`starPress/${pokemonInfo.id}`);
+    };
+  }, []);
 
   return (
     <TouchableOpacity
@@ -59,7 +74,7 @@ export default function PokemonItem({ pokemonInfo }: PokemonItemProps) {
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
