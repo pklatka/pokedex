@@ -12,18 +12,10 @@ import {
   RootStackParamList,
   RootBottomTabParamList,
 } from "./src/types/NavigationTypes";
+import PokemonMap from "./src/components/PokemonMap";
 
 const Tab = createBottomTabNavigator<RootBottomTabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
-
-const TemporaryScreen = () => {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>TMP!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-};
 
 function MainScreenTabs() {
   return (
@@ -53,8 +45,9 @@ function MainScreenTabs() {
       />
       <Tab.Screen
         name="Map"
-        component={TemporaryScreen}
+        component={PokemonMap}
         options={{
+          title: "Pokemon map",
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="map" size={size} color={color} />
           ),
