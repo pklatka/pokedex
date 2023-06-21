@@ -95,8 +95,10 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     position: "absolute",
-    top: 10,
-    right: -5,
+    justifyContent: "center",
+    alignItems: "center",
+    top: 0,
+    right: 0,
     zIndex: 2,
   },
 });
