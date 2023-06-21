@@ -92,9 +92,11 @@ const styles = StyleSheet.create({
     // backgroundColor: 'red'
   },
   star: {
+    width: 40,
+    height: 40,
     position: "absolute",
     top: 10,
-    right: 10,
+    right: -5,
     zIndex: 2,
   },
 });
