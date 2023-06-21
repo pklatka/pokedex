@@ -1,56 +1,57 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const POKEMON_ARRAY = 'POKEMON_ARRAY'
+const POKEMON_ARRAY = "POKEMON_ARRAY";
 
-export async function updatePokemonStatus(id: any, isFavorite: boolean) {
+export async function updatePokemonStatus(
+  id: string,
+  isFavorite: boolean
+): Promise<void> {
+  return new Promise(async (resolve, reject) => {
     try {
-        const array = await AsyncStorage.getItem(POKEMON_ARRAY)
+      let pokemonArray = JSON.parse(
+        (await AsyncStorage.getItem(POKEMON_ARRAY)) || "[]"
+      );
 
-        // Parse array
-        let arrayParsed = JSON.parse(array || '[]')
+      if (isFavorite) {
+        pokemonArray.push(id);
+        await AsyncStorage.setItem(id, "1");
+      } else {
+        pokemonArray = pokemonArray.filter((item: any) => item !== id);
+        await AsyncStorage.removeItem(id);
+      }
 
-        // Update pokemon status
-        if (isFavorite) {
-            arrayParsed.push(id)
-            await AsyncStorage.setItem(id, '1')
-        } else {
-            const index = arrayParsed.indexOf(id)
-            if (index > -1) {
-                arrayParsed = arrayParsed.filter((item: any) => item !== id)
-                await AsyncStorage.removeItem(id)
-            }
-        }
-
-        // Save array
-        await AsyncStorage.setItem(POKEMON_ARRAY, JSON.stringify(arrayParsed))
-
+      await AsyncStorage.setItem(POKEMON_ARRAY, JSON.stringify(pokemonArray));
+      resolve();
     } catch (e) {
-        // saving error
+      reject(e);
     }
+  });
 }
 
-export async function isPokemonFavorite(id: any) {
+export async function isPokemonFavorite(id: string): Promise<boolean> {
+  return new Promise(async (resolve, reject) => {
     try {
-        const value = await AsyncStorage.getItem(id)
-        return value ? true : false
+      const value = await AsyncStorage.getItem(id);
+      resolve(value ? true : false);
     } catch (e) {
-        console.log(e)
-        return false
-        // error reading value
+      reject(e);
     }
+  });
 }
 
-export async function getFavoritePokemons() {
+export async function getFavoritePokemons(): Promise<string[]> {
+  return new Promise(async (resolve, reject) => {
     try {
-        const array = await AsyncStorage.getItem(POKEMON_ARRAY)
-        if (array) {
-            const arrayParsed = JSON.parse(array)
-            return arrayParsed
-        }
-        return []
+      const array = await AsyncStorage.getItem(POKEMON_ARRAY);
+      if (array) {
+        const arrayParsed = JSON.parse(array);
+        resolve(arrayParsed);
+        return;
+      }
+
+      resolve([]);
     } catch (e) {
-        console.log(e)
-        return []
-        // error reading value
+      reject(e);
     }
+  });
 }
