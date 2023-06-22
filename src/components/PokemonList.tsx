@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import PokemonItem from "./PokemonItem";
 import { fetchPokemonData } from "../../utils/fetchPokemonData";
 
-const ON_END_REACHED_THRESHOLD = 3.5;
+const ON_END_REACHED_THRESHOLD = 5;
+const POKEMON_ITEM_WIDTH = 120;
 
 export default function PokemonList() {
   const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);
   const [offset, setOffset] = useState<number>(0);
-  const [rerenderList, setRerenderList] = useState<boolean>(false);
-  const isFocused = useIsFocused();
   const limit: number = 20;
+
+  const { width } = Dimensions.get("window");
+  const expectedNumberOfColumns = Math.floor(width / POKEMON_ITEM_WIDTH);
 
   const fetchData = async () => {
     try {
@@ -27,12 +34,6 @@ export default function PokemonList() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (isFocused) {
-      setRerenderList(!rerenderList);
-    }
-  }, [isFocused]);
-
   return (
     <>
       {pokemonList.length === 0 ? (
@@ -43,10 +44,9 @@ export default function PokemonList() {
           renderItem={({ item }: { item: PokemonData }) => (
             <PokemonItem key={item.url} pokemonInfo={item} />
           )}
-          numColumns={1}
-          extraData={rerenderList}
+          numColumns={expectedNumberOfColumns}
           keyExtractor={(item) => item.url}
-          contentContainerStyle={styles.container}
+          columnWrapperStyle={{ justifyContent: "center" }}
           onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
           onEndReached={fetchData}
         />
@@ -56,12 +56,6 @@ export default function PokemonList() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    flexDirection: "column",
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
   loader: {
     flex: 1,
     justifyContent: "center",

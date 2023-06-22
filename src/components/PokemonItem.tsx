@@ -1,12 +1,5 @@
 import React, { useState, useEffect, memo } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  DeviceEventEmitter,
-} from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { capitalizeFirstLetter } from "../../utils/stringUtils";
 import {
@@ -15,14 +8,21 @@ import {
 } from "../../utils/asyncStorage";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "../types/NavigationTypes";
+import { useIsFocused } from "@react-navigation/native";
 
 type PokemonItemProps = {
   pokemonInfo: PokemonData;
+  showStar?: boolean;
 };
 
-export default memo(function PokemonItem({ pokemonInfo }: PokemonItemProps) {
+export default memo(function PokemonItem({
+  pokemonInfo,
+  showStar = true,
+}: PokemonItemProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const navigation = useNavigation<NavigationProp>();
+  const isFocused = useIsFocused();
+  const [hasShownDetails, setHasShownDetails] = useState(false);
 
   const handleStarPress = async () => {
     try {
@@ -33,37 +33,41 @@ export default memo(function PokemonItem({ pokemonInfo }: PokemonItemProps) {
     }
   };
 
-  DeviceEventEmitter.addListener(`starPress/${pokemonInfo.id}`, () => {
-    handleStarPress();
-  });
-
   useEffect(() => {
+    // TODO: Check what's better
+    // hasShownDetails creates another problem when user deletes a pokemon
+    // from favorites on favorites screen and switches to list screen
+    // if (!isFocused || !hasShownDetails) return;
+    if (!isFocused) return;
+
     (async () => {
       try {
         const isFavorite = await isPokemonFavorite(String(pokemonInfo.id));
         setIsFavorite(isFavorite);
+        setHasShownDetails(false);
       } catch (e) {
         alert(e);
       }
     })();
-
-    return () => {
-      DeviceEventEmitter.removeAllListeners(`starPress/${pokemonInfo.id}`);
-    };
-  }, []);
+  }, [isFocused]);
 
   return (
     <TouchableOpacity
-      onPress={() => navigation.navigate("PokemonDetails", { pokemonInfo })}
+      onPress={() => {
+        navigation.navigate("PokemonDetails", { pokemonInfo });
+        setHasShownDetails(true);
+      }}
     >
       <View style={[styles.container, styles.shadowProp]}>
-        <TouchableOpacity style={styles.star} onPress={handleStarPress}>
-          {isFavorite ? (
-            <AntDesign name="star" size={24} color="yellow" />
-          ) : (
-            <AntDesign name="staro" size={24} color="black" />
-          )}
-        </TouchableOpacity>
+        {showStar && (
+          <TouchableOpacity style={styles.star} onPress={handleStarPress}>
+            {isFavorite ? (
+              <AntDesign name="star" size={24} color="yellow" />
+            ) : (
+              <AntDesign name="staro" size={24} color="black" />
+            )}
+          </TouchableOpacity>
+        )}
         <Image
           style={styles.pokemonImage}
           source={{ uri: pokemonInfo?.sprites?.other?.home?.front_default }}
@@ -78,15 +82,14 @@ export default memo(function PokemonItem({ pokemonInfo }: PokemonItemProps) {
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
+    flex: 1,
     flexDirection: "column",
-    marginTop: 10,
-    marginBottom: 10,
     justifyContent: "space-around",
     alignItems: "center",
+    margin: 10,
     backgroundColor: "#dedede",
-    width: 200,
-    height: 200,
+    width: 100,
+    height: 100,
     borderRadius: 10,
     zIndex: 1,
   },
@@ -96,9 +99,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
   },
-
   pokemonName: {
-    fontSize: 28,
+    fontSize: 14,
   },
   pokemonImage: {
     width: "100%",

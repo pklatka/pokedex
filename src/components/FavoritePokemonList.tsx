@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet, Text, View, Dimensions } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import PokemonItem from "./PokemonItem";
 import { fetchExactPokemonDataById } from "../../utils/fetchPokemonData";
 import { getFavoritePokemons } from "../../utils/asyncStorage";
-
-const ON_END_REACHED_THRESHOLD = 3.5;
+const POKEMON_ITEM_WIDTH = 120;
 
 function NoPokemonsInfo() {
   return (
@@ -33,6 +32,8 @@ export default function PokemonList() {
   const [showViews, setShowViews] = useState<boolean>(false);
   const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);
   const isFocused = useIsFocused();
+  const { width } = Dimensions.get("window");
+  const expectedNumberOfColumns = Math.floor(width / POKEMON_ITEM_WIDTH);
 
   const fetchData = async () => {
     try {
@@ -72,19 +73,16 @@ export default function PokemonList() {
             <FlatList
               data={pokemonList}
               renderItem={({ item }: { item: PokemonData }) => (
-                <PokemonItem key={item.url} pokemonInfo={item} />
+                <PokemonItem
+                  key={item.url}
+                  pokemonInfo={item}
+                  showStar={false}
+                />
               )}
-              numColumns={1}
+              numColumns={expectedNumberOfColumns}
+              columnWrapperStyle={{ justifyContent: "center" }}
               keyExtractor={(item) => item.url}
               contentContainerStyle={styles.container}
-              onEndReachedThreshold={ON_END_REACHED_THRESHOLD}
-              onEndReached={async () => {
-                try {
-                  await fetchData();
-                } catch (e) {
-                  alert(e);
-                }
-              }}
             />
           )}
         </>
@@ -96,8 +94,6 @@ export default function PokemonList() {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    flexDirection: "column",
-    justifyContent: "space-around",
     alignItems: "center",
   },
   loader: {
