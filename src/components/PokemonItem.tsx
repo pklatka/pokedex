@@ -6,6 +6,12 @@ import { updatePokemonStatus, isPokemonFavorite } from "../utils/asyncStorage";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "../types/NavigationTypes";
 import { useIsFocused } from "@react-navigation/native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  Easing,
+  withTiming,
+} from "react-native-reanimated";
 
 type PokemonItemProps = {
   pokemonInfo: PokemonData;
@@ -37,6 +43,11 @@ export default memo(function PokemonItem({
     // if (!isFocused || !hasShownDetails) return;
     if (!isFocused) return;
 
+    offset.value = withTiming(0, {
+      duration: 1500,
+      easing: Easing.out(Easing.exp),
+    });
+
     (async () => {
       try {
         const isFavorite = await isPokemonFavorite(String(pokemonInfo.id));
@@ -48,32 +59,42 @@ export default memo(function PokemonItem({
     })();
   }, [isFocused]);
 
+  const offset = useSharedValue(-1);
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: offset.value * -10 }],
+      opacity: offset.value + 1,
+    };
+  });
+
   return (
-    <TouchableOpacity
-      onPress={() => {
-        navigation.navigate("PokemonDetails", { pokemonInfo });
-        setHasShownDetails(true);
-      }}
-    >
-      <View style={[styles.container, styles.shadowProp]}>
-        {showStar && (
-          <TouchableOpacity style={styles.star} onPress={handleStarPress}>
-            {isFavorite ? (
-              <AntDesign name="star" size={24} color="yellow" />
-            ) : (
-              <AntDesign name="staro" size={24} color="black" />
-            )}
-          </TouchableOpacity>
-        )}
-        <Image
-          style={styles.pokemonImage}
-          source={{ uri: pokemonInfo?.sprites?.other?.home?.front_default }}
-        ></Image>
-        <Text style={styles.pokemonName}>
-          {capitalizeFirstLetter(pokemonInfo?.name)}
-        </Text>
-      </View>
-    </TouchableOpacity>
+    <Animated.View style={animatedStyle}>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate("PokemonDetails", { pokemonInfo });
+          setHasShownDetails(true);
+        }}
+      >
+        <View style={[styles.container, styles.shadowProp]}>
+          {showStar && (
+            <TouchableOpacity style={styles.star} onPress={handleStarPress}>
+              {isFavorite ? (
+                <AntDesign name="star" size={24} color="yellow" />
+              ) : (
+                <AntDesign name="staro" size={24} color="black" />
+              )}
+            </TouchableOpacity>
+          )}
+          <Image
+            style={styles.pokemonImage}
+            source={{ uri: pokemonInfo?.sprites?.other?.home?.front_default }}
+          ></Image>
+          <Text style={styles.pokemonName}>
+            {capitalizeFirstLetter(pokemonInfo?.name)}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 });
 
