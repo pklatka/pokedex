@@ -1,22 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  DeviceEventEmitter,
-} from "react-native";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { ScrollView } from "react-native-gesture-handler";
 import {
   capitalizeFirstLetter,
   convertAPIkeyToReadable,
-} from "../../utils/stringUtils";
-import {
-  isPokemonFavorite,
-  updatePokemonStatus,
-} from "../../utils/asyncStorage";
+} from "../utils/stringUtils";
+import { isPokemonFavorite, updatePokemonStatus } from "../utils/asyncStorage";
 import { PokemonPresentationScreenParams } from "../types/NavigationTypes";
 
 function PokemonStat({

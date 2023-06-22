@@ -5,12 +5,12 @@ import {
   ActivityIndicator,
   Dimensions,
 } from "react-native";
-import { useIsFocused } from "@react-navigation/native";
 import PokemonItem from "./PokemonItem";
-import { fetchPokemonData } from "../../utils/fetchPokemonData";
-
-const ON_END_REACHED_THRESHOLD = 5;
-const POKEMON_ITEM_WIDTH = 120;
+import { fetchPokemonData } from "../utils/fetchPokemonData";
+import {
+  POKEMON_ITEM_WIDTH,
+  ON_END_REACHED_THRESHOLD,
+} from "../constants/settings";
 
 export default function PokemonList() {
   const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);

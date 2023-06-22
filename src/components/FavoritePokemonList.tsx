@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { FlatList, StyleSheet, Text, View, Dimensions } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import PokemonItem from "./PokemonItem";
-import { fetchExactPokemonDataById } from "../../utils/fetchPokemonData";
-import { getFavoritePokemons } from "../../utils/asyncStorage";
-const POKEMON_ITEM_WIDTH = 120;
+import { fetchExactPokemonDataById } from "../utils/fetchPokemonData";
+import { getFavoritePokemons } from "../utils/asyncStorage";
+import { POKEMON_ITEM_WIDTH } from "../constants/settings";
 
 function NoPokemonsInfo() {
   return (

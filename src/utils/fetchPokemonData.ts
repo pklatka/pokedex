@@ -1,4 +1,4 @@
-const API_ROUTE = "https://pokeapi.co/api/v2/pokemon";
+import { API_ROUTE } from "../constants/settings";
 
 export function fetchExactPokemonDataById(
   pokemonId: string

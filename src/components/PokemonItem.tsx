@@ -1,11 +1,8 @@
 import React, { useState, useEffect, memo } from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
-import { capitalizeFirstLetter } from "../../utils/stringUtils";
-import {
-  updatePokemonStatus,
-  isPokemonFavorite,
-} from "../../utils/asyncStorage";
+import { capitalizeFirstLetter } from "../utils/stringUtils";
+import { updatePokemonStatus, isPokemonFavorite } from "../utils/asyncStorage";
 import { useNavigation } from "@react-navigation/native";
 import { NavigationProp } from "../types/NavigationTypes";
 import { useIsFocused } from "@react-navigation/native";
