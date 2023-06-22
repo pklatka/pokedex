@@ -50,7 +50,7 @@ export default function PokemonDetails({
   useEffect(() => {
     (async () => {
       try {
-        const isFavorite = await isPokemonFavorite(String(pokemonInfo.id));
+        const isFavorite = await isPokemonFavorite(pokemonInfo.url);
         setIsFavorite(isFavorite);
       } catch (e) {
         alert(e);
@@ -60,7 +60,7 @@ export default function PokemonDetails({
 
   const handleStarPress = async () => {
     try {
-      await updatePokemonStatus(String(pokemonInfo.id), !isFavorite);
+      await updatePokemonStatus(pokemonInfo.url, !isFavorite);
       setIsFavorite(!isFavorite);
     } catch (e) {
       alert(e);

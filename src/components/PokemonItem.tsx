@@ -12,9 +12,10 @@ import Animated, {
   Easing,
   withTiming,
 } from "react-native-reanimated";
+import { fetchExactPokemonDataByUrl } from "../utils/fetchPokemonData";
 
 type PokemonItemProps = {
-  pokemonInfo: PokemonData;
+  pokemonInfo: PokemonListObject;
   showStar?: boolean;
 };
 
@@ -23,13 +24,16 @@ export default memo(function PokemonItem({
   showStar = true,
 }: PokemonItemProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [pokemonObject, setPokemonObject] = useState<PokemonData>(
+    {} as PokemonData
+  );
   const navigation = useNavigation<NavigationProp>();
   const isFocused = useIsFocused();
   const [hasShownDetails, setHasShownDetails] = useState(false);
 
   const handleStarPress = async () => {
     try {
-      await updatePokemonStatus(String(pokemonInfo.id), !isFavorite);
+      await updatePokemonStatus(pokemonInfo.url, !isFavorite);
       setIsFavorite(!isFavorite);
     } catch (e) {
       alert(e);
@@ -43,16 +47,22 @@ export default memo(function PokemonItem({
     // if (!isFocused || !hasShownDetails) return;
     if (!isFocused) return;
 
-    offset.value = withTiming(0, {
-      duration: 1500,
-      easing: Easing.out(Easing.exp),
-    });
-
     (async () => {
       try {
-        const isFavorite = await isPokemonFavorite(String(pokemonInfo.id));
+        // Get pokemon data
+        if (pokemonObject?.name) return;
+
+        const pokemonData = await fetchExactPokemonDataByUrl(pokemonInfo.url);
+        setPokemonObject(pokemonData);
+
+        const isFavorite = await isPokemonFavorite(pokemonInfo.url);
         setIsFavorite(isFavorite);
         setHasShownDetails(false);
+
+        offset.value = withTiming(0, {
+          duration: 1500,
+          easing: Easing.out(Easing.exp),
+        });
       } catch (e) {
         alert(e);
       }
@@ -71,7 +81,7 @@ export default memo(function PokemonItem({
     <Animated.View style={animatedStyle}>
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate("PokemonDetails", { pokemonInfo });
+          navigation.navigate("PokemonDetails", { pokemonInfo: pokemonObject });
           setHasShownDetails(true);
         }}
       >
@@ -87,10 +97,10 @@ export default memo(function PokemonItem({
           )}
           <Image
             style={styles.pokemonImage}
-            source={{ uri: pokemonInfo?.sprites?.other?.home?.front_default }}
+            source={{ uri: pokemonObject?.sprites?.other?.home?.front_default }}
           ></Image>
           <Text style={styles.pokemonName}>
-            {capitalizeFirstLetter(pokemonInfo?.name)}
+            {capitalizeFirstLetter(pokemonObject?.name)}
           </Text>
         </View>
       </TouchableOpacity>

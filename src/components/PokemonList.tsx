@@ -6,23 +6,24 @@ import {
   Dimensions,
 } from "react-native";
 import PokemonItem from "./PokemonItem";
-import { fetchPokemonData } from "../utils/fetchPokemonData";
+import { fetchPokemonData, fetchPokemonList } from "../utils/fetchPokemonData";
 import {
   POKEMON_ITEM_WIDTH,
   ON_END_REACHED_THRESHOLD,
 } from "../constants/settings";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function PokemonList() {
-  const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);
+  const [pokemonList, setPokemonList] = useState<PokemonListObject[]>([]);
   const [offset, setOffset] = useState<number>(0);
   const limit: number = 20;
-
+  const isFocused = useIsFocused();
   const { width } = Dimensions.get("window");
   const expectedNumberOfColumns = Math.floor(width / POKEMON_ITEM_WIDTH);
 
   const fetchData = async () => {
     try {
-      const data = await fetchPokemonData(offset, limit);
+      const data = await fetchPokemonList(offset, limit);
       setPokemonList([...pokemonList, ...data]);
       setOffset(offset + limit);
     } catch (e) {
@@ -31,8 +32,10 @@ export default function PokemonList() {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
 
   return (
     <>
@@ -41,7 +44,7 @@ export default function PokemonList() {
       ) : (
         <FlatList
           data={pokemonList}
-          renderItem={({ item }: { item: PokemonData }) => (
+          renderItem={({ item }: { item: PokemonListObject }) => (
             <PokemonItem key={item.url} pokemonInfo={item} />
           )}
           numColumns={expectedNumberOfColumns}

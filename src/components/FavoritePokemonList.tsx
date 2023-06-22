@@ -5,6 +5,7 @@ import PokemonItem from "./PokemonItem";
 import { fetchExactPokemonDataById } from "../utils/fetchPokemonData";
 import { getFavoritePokemons } from "../utils/asyncStorage";
 import { POKEMON_ITEM_WIDTH } from "../constants/settings";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function NoPokemonsInfo() {
   return (
@@ -30,7 +31,7 @@ function NoPokemonsInfo() {
 
 export default function PokemonList() {
   const [showViews, setShowViews] = useState<boolean>(false);
-  const [pokemonList, setPokemonList] = useState<PokemonData[]>([]);
+  const [pokemonList, setPokemonList] = useState<string[]>([]);
   const isFocused = useIsFocused();
   const { width } = Dimensions.get("window");
   const expectedNumberOfColumns = Math.floor(width / POKEMON_ITEM_WIDTH);
@@ -41,18 +42,14 @@ export default function PokemonList() {
 
       if (JSON.stringify(favPokemons) === JSON.stringify(pokemonList)) return;
 
-      const data = await Promise.all(
-        favPokemons.map((pokemonId: string) =>
-          fetchExactPokemonDataById(pokemonId)
-        )
-      );
-      setPokemonList(data);
+      setPokemonList(favPokemons);
     } catch (e) {
       alert(e);
     }
   };
 
   useEffect(() => {
+    // AsyncStorage.clear();
     (async () => {
       if (isFocused) {
         await fetchData();
@@ -72,16 +69,16 @@ export default function PokemonList() {
           ) : (
             <FlatList
               data={pokemonList}
-              renderItem={({ item }: { item: PokemonData }) => (
+              renderItem={({ item }: { item: string }) => (
                 <PokemonItem
-                  key={item.url}
-                  pokemonInfo={item}
+                  key={item}
+                  pokemonInfo={{ url: item } as PokemonListObject}
                   showStar={false}
                 />
               )}
               numColumns={expectedNumberOfColumns}
               columnWrapperStyle={{ justifyContent: "center" }}
-              keyExtractor={(item) => item.url}
+              keyExtractor={(item) => item}
               contentContainerStyle={styles.container}
             />
           )}
