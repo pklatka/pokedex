@@ -29,7 +29,7 @@ const MODAL_HEIGHT = 280;
 const MODAL_BOTTOM_MARGIN = 16;
 const MODAL_TOTAL_HEIGHT = MODAL_HEIGHT + MODAL_BOTTOM_MARGIN;
 
-function RemoveMarkerView({ marker }: { marker: MarkerObject }) {
+function RemoveMarkerView({ marker }: { marker: MarkerObject | null }) {
   return (
     <View style={styles.modalContent}>
       <Text style={styles.modalTitle}>{marker?.title}</Text>
@@ -174,13 +174,14 @@ export default function MarkerModal({
         <TouchableOpacity
           style={styles.button}
           onPress={() => {
+            setVisible(false);
+            if (!currentMarker) return;
             markerHandler({
               id: currentMarker.id,
               title: pokemonName,
               description: `Catch date: ${pokemonCatchDate.toLocaleDateString()} ${pokemonCatchDate.toLocaleTimeString()}`,
               coordinate: currentMarker.coordinate,
             });
-            setVisible(false);
           }}
         >
           <Text style={styles.buttonText}>

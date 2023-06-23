@@ -15,5 +15,5 @@ export type MarkerModalProps = {
   visible: boolean;
   setVisible: (visible: boolean) => void;
   markerHandler: (markerDetails: MarkerObject) => void;
-  currentMarker: MarkerObject;
+  currentMarker: MarkerObject | null;
 };
