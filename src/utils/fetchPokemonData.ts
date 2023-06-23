@@ -12,7 +12,6 @@ export async function fetchExactPokemonDataById(
     throw e;
   }
 }
-
 export async function fetchExactPokemonDataByUrl(
   pokemonUrl: string
 ): Promise<PokemonData> {

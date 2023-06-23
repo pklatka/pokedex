@@ -1,6 +1,16 @@
-import React, { useEffect } from "react";
-import { Text, StyleSheet, View, TouchableOpacity } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import React, { useState, useEffect } from "react";
+import {
+  Text,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
+import {
+  Gesture,
+  GestureDetector,
+  TextInput,
+} from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,17 +18,94 @@ import Animated, {
   withTiming,
   runOnJS,
 } from "react-native-reanimated";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { ModalType } from "../enums/ModalType";
+import type { MarkerModalProps, MarkerObject } from "../types/MapTypes";
+import { AntDesign } from "@expo/vector-icons";
 
 const MODAL_HEIGHT = 280;
 const MODAL_BOTTOM_MARGIN = 16;
 const MODAL_TOTAL_HEIGHT = MODAL_HEIGHT + MODAL_BOTTOM_MARGIN;
 
-type MarkerModalProps = {
-  visible: boolean;
-  setVisible: (visible: boolean) => void;
+function RemoveMarkerView({ marker }: { marker: MarkerObject }) {
+  return (
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>{marker?.title}</Text>
+      <Text style={styles.modalText}>{marker?.description}</Text>
+    </View>
+  );
+}
+
+type AddMarkerViewProps = {
+  pokemonName: string;
+  setPokemonName: (name: string) => void;
+  pokemonCatchDate: Date;
+  setPokemonCatchDate: (date: Date) => void;
 };
 
-export default function MarkerModal({ visible, setVisible }: MarkerModalProps) {
+function AddMarkerView({
+  pokemonName,
+  setPokemonName,
+  pokemonCatchDate: date,
+  setPokemonCatchDate: setDate,
+}: AddMarkerViewProps) {
+  const isPlatformIOS = Platform.OS === "ios";
+  const [show, setShow] = useState(isPlatformIOS);
+
+  const onDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (!isPlatformIOS) setShow(false);
+    setDate(selectedDate || new Date());
+  };
+
+  return (
+    <View style={styles.modalContent}>
+      <TextInput
+        style={styles.modalInput}
+        placeholder="Pokemon name"
+        value={pokemonName}
+        onChangeText={setPokemonName}
+      />
+      <View>
+        {!isPlatformIOS && (
+          <View style={styles.dateWrapper}>
+            <Text style={styles.dateText}>
+              {date.toLocaleDateString() + " " + date.toLocaleTimeString()}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setShow(true);
+              }}
+            >
+              <AntDesign name="calendar" size={30} color="black" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {show && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={date}
+            mode={"datetime"}
+            onChange={onDateChange}
+          />
+        )}
+      </View>
+    </View>
+  );
+}
+
+export default function MarkerModal({
+  modalType,
+  visible,
+  setVisible,
+  markerHandler,
+  currentMarker,
+}: MarkerModalProps) {
+  const [pokemonName, setPokemonName] = useState<string>("");
+  const [pokemonCatchDate, setPokemonCatchDate] = useState<Date>(new Date());
+
   const offset = useSharedValue(MODAL_TOTAL_HEIGHT);
   const startValue = useSharedValue(MODAL_TOTAL_HEIGHT);
   const animatedStyle = useAnimatedStyle(() => {
@@ -28,6 +115,9 @@ export default function MarkerModal({ visible, setVisible }: MarkerModalProps) {
   });
 
   useEffect(() => {
+    if (!visible) {
+      setPokemonName("");
+    }
     offset.value = withTiming(visible ? 0 : MODAL_TOTAL_HEIGHT, {
       duration: 500,
       easing: Easing.out(Easing.exp),
@@ -69,17 +159,33 @@ export default function MarkerModal({ visible, setVisible }: MarkerModalProps) {
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.modalContainer, animatedStyle]}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Modal Title</Text>
-          <Text style={styles.modalText}>Modal Text</Text>
-        </View>
+        <View style={styles.hand}></View>
+        {modalType == ModalType.New ? (
+          <AddMarkerView
+            pokemonName={pokemonName}
+            setPokemonName={setPokemonName}
+            pokemonCatchDate={pokemonCatchDate}
+            setPokemonCatchDate={setPokemonCatchDate}
+          />
+        ) : (
+          <RemoveMarkerView marker={currentMarker} />
+        )}
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => {
+            markerHandler({
+              id: currentMarker.id,
+              title: pokemonName,
+              description: `Catch date: ${pokemonCatchDate.toLocaleDateString()} ${pokemonCatchDate.toLocaleTimeString()}`,
+              coordinate: currentMarker.coordinate,
+            });
             setVisible(false);
           }}
         >
-          <Text style={styles.buttonText}>Close</Text>
+          <Text style={styles.buttonText}>
+            {modalType == ModalType.New ? "Add new pokemon" : "Delete pokemon"}
+          </Text>
         </TouchableOpacity>
       </Animated.View>
     </GestureDetector>
@@ -87,6 +193,24 @@ export default function MarkerModal({ visible, setVisible }: MarkerModalProps) {
 }
 
 const styles = StyleSheet.create({
+  hand: {
+    position: "absolute",
+    top: 8,
+    width: "40%",
+    height: 8,
+    backgroundColor: "#dddddd",
+    borderRadius: 8,
+  },
+  dateWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: 220,
+    marginBottom: 8,
+  },
+  dateText: {
+    fontSize: 17,
+  },
   modal: {
     flex: 1,
     justifyContent: "center",
@@ -96,6 +220,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
+    paddingTop: 8,
   },
   modalContainer: {
     justifyContent: "space-between",
@@ -117,6 +242,14 @@ const styles = StyleSheet.create({
       shadowRadius: 3,
     },
     zIndex: 5,
+  },
+  modalInput: {
+    width: "90%",
+    marginBottom: 16,
+    fontSize: 24,
+    textAlign: "center",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 24,
