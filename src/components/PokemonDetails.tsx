@@ -116,8 +116,6 @@ export default function PokemonDetails({
 
 const styles = StyleSheet.create({
   container: {
-    // flex: 1,
-    // justifyContent: 'center',
     flexDirection: "column",
     alignItems: "center",
     paddingTop: 10,
@@ -138,14 +136,11 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   pokemonStatsWrapper: {
-    // width: '60%'
     width: 265,
     marginTop: 10,
     flexDirection: "column",
   },
   pokemonStatsContainer: {
-    // backgroundColor: '#dedede',
-    // width: 300,
     flexDirection: "row",
     justifyContent: "space-between",
   },

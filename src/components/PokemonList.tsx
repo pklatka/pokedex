@@ -6,7 +6,7 @@ import {
   Dimensions,
 } from "react-native";
 import PokemonItem from "./PokemonItem";
-import { fetchPokemonData, fetchPokemonList } from "../utils/fetchPokemonData";
+import { fetchPokemonList } from "../utils/fetchPokemonData";
 import {
   POKEMON_ITEM_WIDTH,
   ON_END_REACHED_THRESHOLD,
@@ -31,9 +31,15 @@ export default function PokemonList() {
     }
   };
 
+  // TODO: Stars are not updated when a pokemon is removed
+  // on the FavoritePokemonList screen. When fixed, remove
+  // else block and fetch data only once.
   useEffect(() => {
     if (isFocused) {
       fetchData();
+    } else {
+      setPokemonList([]);
+      setOffset(0);
     }
   }, [isFocused]);
 

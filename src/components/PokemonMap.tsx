@@ -5,6 +5,11 @@ import * as Location from "expo-location";
 import { ModalType } from "../enums/ModalType";
 import type { MarkerObject } from "../types/MapTypes";
 import { Platform } from "react-native";
+import {
+  addSpottedPokemon,
+  getSpottedPokemons,
+  removeSpottedPokemon,
+} from "../utils/asyncStorage";
 
 export default function PokemonMap() {
   const [addNewMarkerModalVisible, setAddNewMarkerModalVisible] =
@@ -21,9 +26,11 @@ export default function PokemonMap() {
     selectedMarker!.description = marker?.description;
     selectedMarker!.title = marker?.title;
     setMarkers([...markers, selectedMarker!]);
+    addSpottedPokemon(JSON.stringify(marker));
   };
 
   const removeMarker = () => {
+    removeSpottedPokemon(JSON.stringify(selectedMarker!));
     setMarkers(markers.filter((marker) => marker?.id !== selectedMarker?.id));
     setSelectedMarker(null);
   };
@@ -35,6 +42,8 @@ export default function PokemonMap() {
         alert("Permission to access location was denied");
         return;
       }
+
+      setMarkers((await getSpottedPokemons()) || []);
 
       let location = await Location.getCurrentPositionAsync({});
       ref?.current?.animateToRegion({

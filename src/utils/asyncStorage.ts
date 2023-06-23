@@ -1,6 +1,56 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MarkerObject } from "../types/MapTypes";
 
 const POKEMON_ARRAY = "POKEMON_ARRAY";
+const SPOTTED_POKEMON_ARRAY = "SPOTTED_POKEMON_ARRAY";
+
+export async function addSpottedPokemon(pokemon: string): Promise<void> {
+  try {
+    let pokemonArray = JSON.parse(
+      (await AsyncStorage.getItem(SPOTTED_POKEMON_ARRAY)) || "[]"
+    );
+
+    pokemonArray.push(pokemon);
+
+    await AsyncStorage.setItem(
+      SPOTTED_POKEMON_ARRAY,
+      JSON.stringify(pokemonArray)
+    );
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function getSpottedPokemons(): Promise<MarkerObject[]> {
+  try {
+    const array = await AsyncStorage.getItem(SPOTTED_POKEMON_ARRAY);
+    if (array) {
+      const arrayParsed = JSON.parse(array);
+      return arrayParsed.map((item: any) => JSON.parse(item));
+    }
+
+    return [];
+  } catch (e) {
+    throw e;
+  }
+}
+
+export async function removeSpottedPokemon(pokemon: string): Promise<void> {
+  try {
+    let pokemonArray = JSON.parse(
+      (await AsyncStorage.getItem(SPOTTED_POKEMON_ARRAY)) || "[]"
+    );
+
+    pokemonArray = pokemonArray.filter((item: any) => item !== pokemon);
+
+    await AsyncStorage.setItem(
+      SPOTTED_POKEMON_ARRAY,
+      JSON.stringify(pokemonArray)
+    );
+  } catch (e) {
+    throw e;
+  }
+}
 
 export async function updatePokemonStatus(
   id: string,

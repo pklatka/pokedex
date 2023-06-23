@@ -41,10 +41,6 @@ export default memo(function PokemonItem({
   };
 
   useEffect(() => {
-    // TODO: Check what's better
-    // hasShownDetails creates another problem when user deletes a pokemon
-    // from favorites on favorites screen and switches to list screen
-    // if (!isFocused || !hasShownDetails) return;
     if (!isFocused) return;
 
     (async () => {

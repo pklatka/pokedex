@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FlatList, StyleSheet, Text, View, Dimensions } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import PokemonItem from "./PokemonItem";
-import { fetchExactPokemonDataById } from "../utils/fetchPokemonData";
 import { getFavoritePokemons } from "../utils/asyncStorage";
 import { POKEMON_ITEM_WIDTH } from "../constants/settings";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function NoPokemonsInfo() {
   return (
@@ -49,7 +47,6 @@ export default function PokemonList() {
   };
 
   useEffect(() => {
-    // AsyncStorage.clear();
     (async () => {
       if (isFocused) {
         await fetchData();
